@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lumina Mind | Neural KB</title>
+    <script src="https://cdn.tailwindcss.com">
+        async function initNeuralMap() {
+            const container = document.getElementById('neural-map-container');
+            const svg = document.getElementById('neural-map-svg');
+            const loadingText = container.querySelector('.italic');
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+
+            try {
+                const response = await fetch(`${API_BASE}/graph`);
+                const data = await response.json();
+                
+                loadingText.style.display = 'none';
+                
+                const nodes = data.nodes;
+                const links = data.links;
+
+                const simulation = d3.forceSimulation(nodes)
+                    .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                    .force('charge', d3.forceManyBody().strength(-200))
+                    .force('center', d3.forceCenter(width / 2, height / 2));
+
+                const g = svg.append('g');
+
+                // Zoom & Pan
+                svg.call(d3.zoom().on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                }));
+
+                const link = g.append('g')
+                    .selectAll('line')
+                    .data(links)
+                    .join('line')
+                    .attr('class', 'link');
+
+                const node = g.append('g')
+                    .selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('r', 5)
+                    .attr('fill', '#fff')
+                    .attr('class', d => d.status === 'hot' ? 'node hot-node' : 'node')
+                    .on('click', (event, d) => {
+                        switchView('chat');
+                        const input = document.getElementById('chat-input');
+                        input.value = d.id;
+                        sendMessage();
+                    });
+
+                const label = g.append('g')
+                    .selectAll('text')
+                    .data(nodes)
+                    .join('text')
+                    .attr('class', 'node-label')
+                    .text(d => d.id)
+                    .attr('dy', -10);
+
+                simulation.on('tick', () => {
+                    link
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+
+                    node
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y);
+
+                    label
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y);
+                });
+
+            } catch (e) {
+                console.error('Map load error:', e);
+                loadingText.innerText = 'Error loading neural map. Check backend.';
+            }
+        }
+
+    </script>
+    <script src="https://d3js.org/d3.v7.min.js">
+        async function initNeuralMap() {
+            const container = document.getElementById('neural-map-container');
+            const svg = document.getElementById('neural-map-svg');
+            const loadingText = container.querySelector('.italic');
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+
+            try {
+                const response = await fetch(`${API_BASE}/graph`);
+                const data = await response.json();
+                
+                loadingText.style.display = 'none';
+                
+                const nodes = data.nodes;
+                const links = data.links;
+
+                const simulation = d3.forceSimulation(nodes)
+                    .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                    .force('charge', d3.forceManyBody().strength(-200))
+                    .force('center', d3.forceCenter(width / 2, height / 2));
+
+                const g = svg.append('g');
+
+                // Zoom & Pan
+                svg.call(d3.zoom().on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                }));
+
+                const link = g.append('g')
+                    .selectAll('line')
+                    .data(links)
+                    .join('line')
+                    .attr('class', 'link');
+
+                const node = g.append('g')
+                    .selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('r', 5)
+                    .attr('fill', '#fff')
+                    .attr('class', d => d.status === 'hot' ? 'node hot-node' : 'node')
+                    .on('click', (event, d) => {
+                        switchView('chat');
+                        const input = document.getElementById('chat-input');
+                        input.value = d.id;
+                        sendMessage();
+                    });
+
+                const label = g.append('g')
+                    .selectAll('text')
+                    .data(nodes)
+                    .join('text')
+                    .attr('class', 'node-label')
+                    .text(d => d.id)
+                    .attr('dy', -10);
+
+                simulation.on('tick', () => {
+                    link
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+
+                    node
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y);
+
+                    label
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y);
+                });
+
+            } catch (e) {
+                console.error('Map load error:', e);
+                loadingText.innerText = 'Error loading neural map. Check backend.';
+            }
+        }
+
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --amoled-black: #000000;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --accent-white: #FFFFFF;
+            --blur-intensity: 16px;
+            --clay-shadow-outer: 0 20px 40px rgba(0,0,0,0.4);
+            --clay-shadow-inner: inset 0 -4px 8px rgba(0,0,0,0.3), inset 0 4px 8px rgba(255,255,255,0.05);
+        }
+
+        body {
+            background-color: var(--amoled-black);
+            color: var(--accent-white);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-intensity));
+            -webkit-backdrop-filter: blur(var(--blur-intensity));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--clay-shadow-outer);
+        }
+
+        .glass-nav {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .neural-input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .neural-input:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-action {
+            transition: transform 0.1s active;
+        }
+        .btn-action:active {
+            transform: scale(0.95);
+        }
+
+        .view-section {
+            display: none;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .view-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+
+        .map-placeholder {
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+        }
+        .node {
+            cursor: pointer;
+        }
+        .node-label {
+            font-size: 10px;
+            fill: rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+            text-anchor: middle;
+            font-family: 'Inter', sans-serif;
+        }
+        .link {
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 1px;
+        }
+        @keyframes node-pulse {
+            0% { r: 5; opacity: 0.8; stroke-width: 1; }
+            50% { r: 8; opacity: 1; stroke-width: 3; stroke: rgba(255, 255, 255, 0.5); }
+            100% { r: 5; opacity: 0.8; stroke-width: 1; }
+        }
+        .hot-node {
+            animation: node-pulse 2s infinite ease-in-out;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Main Content Area -->
+    <main class="p-4 pb-24">
+        
+        <!-- 1. Neural Chat Interface -->
+        <section id="chat-view" class="view-section active">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-light tracking-tight">Neural <span class="font-bold">Mind</span></h1>
+                <div class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center">
+                    <i class="fa-solid fa-user text-sm"></i>
+                </div>
+            </header>
+            
+            <div id="chat-container" class="flex-1 space-y-4 mb-4">
+                <div class="glass-card p-4 max-w-[85%] self-start">
+                    <p class="text-sm leading-relaxed opacity-90">Welcome back. Your knowledge map is synchronized. What shall we explore today?</p>
+                </div>
+            </div>
+
+            <div class="fixed bottom-24 left-4 right-4">
+                <div class="glass-card p-2 flex items-center gap-2">
+                    <input type="text" id="chat-input" placeholder="Query your mind..." class="neural-input flex-1 py-3 px-4 rounded-2xl text-sm">
+                    <button onclick="sendMessage()" class="btn-action bg-white text-black w-11 h-11 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Document Management -->
+        <section id="docs-view" class="view-section">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-light tracking-tight">Knowledge <span class="font-bold">Vault</span></h1>
+                <button onclick="document.getElementById('file-upload').click()" class="btn-action glass-card px-4 py-2 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Upload
+                </button>
+                <input type="file" id="file-upload" class="hidden" onchange="handleFileUpload(this)">
+            </header>
+
+            <div class="grid grid-cols-1 gap-3" id="docs-list">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+                <!-- 3. Knowledge Map -->
+        <section id="map-view" class="view-section">
+            <header class="mb-6">
+                <h1 class="text-2xl font-light tracking-tight">Neural <span class="font-bold">Map</span></h1>
+                <p class="text-xs opacity-50">Visualizing cognitive connections</p>
+            </header>
+            <div class="glass-card flex-1 map-placeholder overflow-hidden relative" id="neural-map-container">
+                <svg id="neural-map-svg" class="w-full h-full cursor-grab active:cursor-grabbing"></svg>
+                
+                <div class="absolute bottom-4 left-4 right-4 text-center pointer-events-none">
+                    <p class="text-xs opacity-40 italic">Interactive visualization loading...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="glass-nav fixed bottom-0 left-0 right-0 h-20 flex items-center justify-around px-6 pb-4">
+        <button onclick="switchView('chat')" class="nav-item text-white flex flex-col items-center gap-1 transition-all duration-300" id="nav-chat">
+            <i class="fa-solid fa-comment-dots text-xl"></i>
+            <span class="text-[10px] uppercase tracking-widest opacity-70">Neural</span>
+        </button>
+        <button onclick="switchView('docs')" class="nav-item text-white/40 flex flex-col items-center gap-1 transition-all duration-300" id="nav-docs">
+            <i class="fa-solid fa-folder-open text-xl"></i>
+            <span class="text-[10px] uppercase tracking-widest opacity-40">Vault</span>
+        </button>
+        <button onclick="switchView('map')" class="nav-item text-white/40 flex flex-col items-center gap-1 transition-all duration-300" id="nav-map">
+            <i class="fa-solid fa-diagram-project text-xl"></i>
+            <span class="text-[10px] uppercase tracking-widest opacity-40">Map</span>
+        </button>
+    </nav>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        function switchView(view) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => {
+                i.classList.remove('text-white');
+                i.classList.add('text-white/40');
+                i.querySelector('span').classList.replace('opacity-70', 'opacity-40');
+            });
+
+            document.getElementById(view + '-view').classList.add('active');
+            const nav = document.getElementById('nav-' + view);
+            nav.classList.replace('text-white/40', 'text-white');
+            nav.querySelector('span').classList.replace('opacity-40', 'opacity-70');
+            
+            if (view === 'docs') loadDocuments();
+            if (view === 'map') initNeuralMap();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const container = document.getElementById('chat-container');
+            const query = input.value.trim();
+            
+            if (!query) return;
+
+            // User Message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'glass-card p-4 max-w-[85%] self-end ml-auto text-right';
+            userDiv.innerHTML = `<p class="text-sm leading-relaxed">${query}</p>`;
+            container.appendChild(userDiv);
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            // AI Loading State
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'glass-card p-4 max-w-[85%] self-start';
+            aiDiv.innerHTML = `<div class="flex gap-1 items-center opacity-60"><div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div><div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:0.2s]"></div><div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:0.4s]"></div></div>`;
+            container.appendChild(aiDiv);
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const response = await fetch(`${API_BASE}/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+                const data = await response.json();
+                aiDiv.innerHTML = `<p class="text-sm leading-relaxed opacity-90">${data.response || 'No response from neural mind.'}</p>`;
+            } catch (e) {
+                aiDiv.innerHTML = `<p class="text-sm leading-relaxed opacity-60 text-red-400">Connection failed. Ensure backend is running at ${API_BASE}</p>`;
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function handleFileUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const list = document.getElementById('docs-list');
+            
+            const div = document.createElement('div');
+            div.className = 'glass-card p-4 flex items-center justify-between animate-pulse';
+            div.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-file text-white/60"></i>
+                    <div>
+                        <p class="text-sm font-medium">${file.name}</p>
+                        <p class="text-xs opacity-50">Uploading...</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-spinner fa-spin opacity-40"></i>
+            `;
+            list.prepend(div);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) throw new Error('Upload failed');
+                
+                div.classList.remove('animate-pulse');
+                div.querySelector('.fa-spinner').className = 'fa-solid fa-ellipsis-vertical opacity-40';
+                div.querySelector('.text-xs').innerText = 'Uploaded just now';
+            } catch (e) {
+                div.classList.remove('animate-pulse');
+                div.querySelector('.fa-spinner').className = 'fa-solid fa-circle-exclamation text-red-400';
+                div.querySelector('.text-xs').innerText = 'Upload failed';
+            }
+        }
+
+        async function loadDocuments() {
+            const list = document.getElementById('docs-list');
+            try {
+                const response = await fetch(`${API_BASE}/documents`);
+                const docs = await response.json();
+                list.innerHTML = docs.map(doc => `
+                    <div class="glass-card p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid ${doc.type === 'pdf' ? 'fa-file-pdf text-red-400' : 'fa-file-word text-blue-400'}"></i>
+                            <div>
+                                <p class="text-sm font-medium">${doc.name}</p>
+                                <p class="text-xs opacity-50">${doc.uploaded_at || 'Recently'}</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-ellipsis-vertical opacity-40"></i>
+                    </div>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = `<p class="text-center opacity-50 text-sm py-10">Unable to fetch documents from vault.</p>`;
+            }
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    
+        async function initNeuralMap() {
+            const container = document.getElementById('neural-map-container');
+            const svg = document.getElementById('neural-map-svg');
+            const loadingText = container.querySelector('.italic');
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+
+            try {
+                const response = await fetch(`${API_BASE}/graph`);
+                const data = await response.json();
+                
+                loadingText.style.display = 'none';
+                
+                const nodes = data.nodes;
+                const links = data.links;
+
+                const simulation = d3.forceSimulation(nodes)
+                    .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                    .force('charge', d3.forceManyBody().strength(-200))
+                    .force('center', d3.forceCenter(width / 2, height / 2));
+
+                const g = svg.append('g');
+
+                // Zoom & Pan
+                svg.call(d3.zoom().on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                }));
+
+                const link = g.append('g')
+                    .selectAll('line')
+                    .data(links)
+                    .join('line')
+                    .attr('class', 'link');
+
+                const node = g.append('g')
+                    .selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('r', 5)
+                    .attr('fill', '#fff')
+                    .attr('class', d => d.status === 'hot' ? 'node hot-node' : 'node')
+                    .on('click', (event, d) => {
+                        switchView('chat');
+                        const input = document.getElementById('chat-input');
+                        input.value = d.id;
+                        sendMessage();
+                    });
+
+                const label = g.append('g')
+                    .selectAll('text')
+                    .data(nodes)
+                    .join('text')
+                    .attr('class', 'node-label')
+                    .text(d => d.id)
+                    .attr('dy', -10);
+
+                simulation.on('tick', () => {
+                    link
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+
+                    node
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y);
+
+                    label
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y);
+                });
+
+            } catch (e) {
+                console.error('Map load error:', e);
+                loadingText.innerText = 'Error loading neural map. Check backend.';
+            }
+        }
+
+    </script>
+</body>
+</html>

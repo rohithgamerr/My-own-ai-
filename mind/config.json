@@ -1,0 +1,6 @@
+{
+    "model_provider": "nvidia", 
+    "model_name": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "api_key": "YOUR_API_KEY_HERE",
+    "api_base": "https://integrate.api.nvidia.com/v1"
+}

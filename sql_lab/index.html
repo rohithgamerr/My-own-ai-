@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lumina SQL Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.125);
+            --glass-blur: 12px;
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --bg-dark: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a, #020617);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            transition: transform 0.1s active, opacity 0.2s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .streak-badge {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 10px;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="flex h-screen p-4 gap-4">
+
+    <!-- Left Side: Challenge Panel -->
+    <aside class="w-80 flex flex-col gap-4 animate-slide-in">
+        <div class="glass-panel rounded-3xl p-6 flex flex-col gap-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-bold tracking-tight">Lumina <span class="text-indigo-400">SQL</span></h1>
+                <div class="streak-badge px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <span>🔥</span> <span id="streak-count">12</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Daily Challenge</div>
+                <div class="p-4 rounded-2xl bg-black/20 border border-white/5">
+                    <h3 class="font-semibold mb-2">The Ghost Orders</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        Find all customers who placed an order in 2023 but have no orders in 2024. Return their email and full name.
+                    </p>
+                </div>
+                <button onclick="checkAnswer()" class="w-full py-3 rounded-xl btn-primary font-semibold text-sm shadow-lg">
+                    Check Answer
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-panel rounded-3xl p-6 flex-1 overflow-hidden flex flex-col">
+            <div class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-4">Lab Progress</div>
+            <div class="space-y-3 overflow-y-auto custom-scrollbar pr-2">
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                    <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span class="text-sm text-slate-300">Basic Selects</span>
+                </div>
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                    <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span class="text-sm text-slate-300">Join Logic</span>
+                </div>
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                    <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                    <span class="text-sm text-white font-medium">Advanced Filtering</span>
+                </div>
+                <div class="flex items-center gap-3 p-2 rounded-lg opacity-40">
+                    <div class="w-2 h-2 rounded-full bg-slate-500"></div>
+                    <span class="text-sm text-slate-400">Window Functions</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Right Side: Editor & Results -->
+    <main class="flex-1 flex flex-col gap-4">
+        <!-- Editor Area -->
+        <div class="glass-panel rounded-3xl flex flex-col overflow-hidden h-1/2">
+            <div class="px-6 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                </div>
+                <div class="text-xs text-slate-400 mono-font">query_editor.sql</div>
+                <button onclick="runQuery()" class="px-4 py-1.5 rounded-lg btn-primary text-xs font-bold flex items-center gap-2">
+                    <span>▶</span> RUN
+                </button>
+            </div>
+            <div class="flex-1 relative">
+                <textarea 
+                    id="sql-editor" 
+                    spellcheck="false"
+                    class="absolute inset-0 w-full h-full p-6 glass-input mono-font text-sm leading-relaxed resize-none"
+                    placeholder="SELECT * FROM users WHERE..."
+                ></textarea>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="glass-panel rounded-3xl flex flex-col overflow-hidden h-1/2">
+            <div class="px-6 py-3 border-b border-white/10 bg-white/5 flex justify-between items-center">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Query Results</span>
+                <span id="result-stats" class="text-xs text-slate-500 mono-font">0 rows returned</span>
+            </div>
+            <div class="flex-1 overflow-auto custom-scrollbar">
+                <table id="results-table" class="w-full text-left text-sm mono-font border-collapse">
+                    <thead class="sticky top-0 bg-white/10 backdrop-blur-md z-10">
+                        <tr id="table-head" class="text-slate-300 border-b border-white/10">
+                            <!-- Headers injected here -->
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="text-slate-400">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+                <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-500 gap-2">
+                    <span class="text-3xl">⚡</span>
+                    <p>Run a query to see results</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const mockData = [
+            { id: 1, name: "Alice Vance", email: "alice@example.com", status: "Active" },
+            { id: 2, name: "Bob Smith", email: "bob@example.com", status: "Inactive" },
+            { id: 3, name: "Charlie Day", email: "charlie@example.com", status: "Active" },
+            { id: 4, name: "Diana Prince", email: "diana@example.com", status: "Active" },
+            { id: 5, name: "Ethan Hunt", email: "ethan@example.com", status: "Pending" },
+        ];
+
+        function runQuery() {
+            const editor = document.getElementById('sql-editor');
+            if (!editor.value.trim()) return;
+
+            const emptyState = document.getElementById('empty-state');
+            const tableHead = document.getElementById('table-head');
+            const tableBody = document.getElementById('table-body');
+            const stats = document.getElementById('result-stats');
+
+            emptyState.classList.add('hidden');
+            tableHead.innerHTML = '';
+            tableBody.innerHTML = '';
+
+            stats.innerText = "Executing...";
+            
+            setTimeout(() => {
+                const keys = Object.keys(mockData[0]);
+                
+                keys.forEach(key => {
+                    const th = document.createElement('th');
+                    th.className = 'px-6 py-3 font-medium capitalize';
+                    th.innerText = key;
+                    tableHead.appendChild(th);
+                });
+
+                mockData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-white/5 hover:bg-white/5 transition-colors';
+                    keys.forEach(key => {
+                        const td = document.createElement('td');
+                        td.className = 'px-6 py-4';
+                        td.innerText = row[key];
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+
+                stats.innerText = `${mockData.length} rows returned`;
+            }, 400);
+        }
+
+        function checkAnswer() {
+            const editor = document.getElementById('sql-editor');
+            if (!editor.value.trim()) {
+                alert("Please write a query first!");
+                return;
+            }
+            alert("Analyzing your solution... Almost there!");
+        }
+    </script>
+</body>
+</html>
